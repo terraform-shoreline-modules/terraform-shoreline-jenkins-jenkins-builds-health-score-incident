@@ -3,23 +3,15 @@
   "description": "This incident type relates to issues with the health score of Jenkins builds. It could indicate that the builds are failing or not performing optimally. The incident could be triggered by failures in the health check process for a specific instance of Jenkins, and it may require investigation and remediation to restore normal operation.",
   "params": [
     {
-      "name": "JOB_NAME",
-      "value": ""
-    },
-    {
-      "name": "JENKINS_HOSTNAME",
-      "value": ""
-    },
-    {
       "name": "JENKINS_USERNAME",
       "value": ""
     },
     {
-      "name": "INSTANCE_NAME",
+      "name": "JENKINS_API_TOKEN",
       "value": ""
     },
     {
-      "name": "JENKINS_API_TOKEN",
+      "name": "JOB_NAME",
       "value": ""
     },
     {
@@ -28,6 +20,14 @@
     },
     {
       "name": "METRICS_ENDPOINT",
+      "value": ""
+    },
+    {
+      "name": "JENKINS_HOSTNAME",
+      "value": ""
+    },
+    {
+      "name": "INSTANCE_NAME",
       "value": ""
     },
     {
@@ -132,7 +132,7 @@
       "name": "cell_15",
       "type": "OP_LANG",
       "enabled": true,
-      "content": "host | host_name=$HOST_NAME | invoke_jenkins_build_trigger($JOB_NAME, $JENKINS_HOSTNAME, $JENKINS_USERNAME, $JENKINS_API_TOKEN, $PROJECT_DIRECTORY)"
+      "content": "host | host_name=$HOST_NAME | invoke_jenkins_ci_script($JENKINS_USERNAME, $JENKINS_API_TOKEN, $JOB_NAME, $PROJECT_DIRECTORY, $JENKINS_HOSTNAME)"
     },
     {
       "name": "cell_16",
@@ -144,7 +144,7 @@
       "name": "cell_17",
       "type": "OP_LANG",
       "enabled": true,
-      "content": "host | host_name=$HOST_NAME | invoke_restart_jenkins()"
+      "content": "host | host_name=$HOST_NAME | invoke_restart_jenkins_service()"
     }
   ]
 }

@@ -1,0 +1,150 @@
+{
+  "name": "jenkins_builds_health_score_incident",
+  "description": "This incident type relates to issues with the health score of Jenkins builds. It could indicate that the builds are failing or not performing optimally. The incident could be triggered by failures in the health check process for a specific instance of Jenkins, and it may require investigation and remediation to restore normal operation.",
+  "params": [
+    {
+      "name": "JOB_NAME",
+      "value": ""
+    },
+    {
+      "name": "JENKINS_HOSTNAME",
+      "value": ""
+    },
+    {
+      "name": "JENKINS_USERNAME",
+      "value": ""
+    },
+    {
+      "name": "INSTANCE_NAME",
+      "value": ""
+    },
+    {
+      "name": "JENKINS_API_TOKEN",
+      "value": ""
+    },
+    {
+      "name": "PROJECT_DIRECTORY",
+      "value": ""
+    },
+    {
+      "name": "METRICS_ENDPOINT",
+      "value": ""
+    },
+    {
+      "name": "HOST_NAME",
+      "value": ""
+    },
+    {
+      "name": "K8S_CLUSTER_NAME",
+      "value": ""
+    },
+    {
+      "name": "NAMESPACE",
+      "value": ""
+    }
+  ],
+  "cells": [
+    {
+      "name": "cell_1",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Jenkins builds health score incident.\nThis incident type relates to issues with the health score of Jenkins builds. It could indicate that the builds are failing or not performing optimally. The incident could be triggered by failures in the health check process for a specific instance of Jenkins, and it may require investigation and remediation to restore normal operation."
+    },
+    {
+      "name": "cell_2",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if Jenkins is running"
+    },
+    {
+      "name": "cell_3",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `systemctl status jenkins`"
+    },
+    {
+      "name": "cell_4",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if Jenkins is reachable from the affected instance"
+    },
+    {
+      "name": "cell_5",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `ping ${JENKINS_HOSTNAME}`"
+    },
+    {
+      "name": "cell_6",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if the Jenkins plugin for the affected instance is installed and updated"
+    },
+    {
+      "name": "cell_7",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `java -jar jenkins-cli.jar -s https://${JENKINS_HOSTNAME}/ list-plugins`"
+    },
+    {
+      "name": "cell_8",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if the Jenkins job is configured correctly"
+    },
+    {
+      "name": "cell_9",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `curl -X GET -u ${JENKINS_USERNAME}:${JENKINS_API_TOKEN} https://${JENKINS_HOSTNAME}/job/${JOB_NAME}/config.xml`"
+    },
+    {
+      "name": "cell_10",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the Jenkins logs for errors"
+    },
+    {
+      "name": "cell_11",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `tail -f /var/log/jenkins/jenkins.log`"
+    },
+    {
+      "name": "cell_12",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the health score metrics for the affected instance"
+    },
+    {
+      "name": "cell_13",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `curl -X GET https://${METRICS_ENDPOINT}/${INSTANCE_NAME}/health`"
+    },
+    {
+      "name": "cell_14",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Changes made to the codebase that caused compatibility issues with the Jenkins build server."
+    },
+    {
+      "name": "cell_15",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "host | host_name=$HOST_NAME | invoke_jenkins_build_trigger($JOB_NAME, $JENKINS_HOSTNAME, $JENKINS_USERNAME, $JENKINS_API_TOKEN, $PROJECT_DIRECTORY)"
+    },
+    {
+      "name": "cell_16",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Restart the Jenkins server to clear any cache or memory-related issues."
+    },
+    {
+      "name": "cell_17",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "host | host_name=$HOST_NAME | invoke_restart_jenkins()"
+    }
+  ]
+}
